@@ -1,0 +1,30 @@
+{% extends "layouts/app_shell.html" %}
+{% load i18n %}
+{% block title %}{% trans "Souscription" %}{% endblock %}
+{% block page_heading %}{% trans "Souscription Premium (démo)" %}{% endblock %}
+{% block app_main %}
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-md-5">
+        <p class="text-muted">{% trans "Sélectionnez une période de facturation et un opérateur. Le paiement est simulé : une transaction « encaissée » et un abonnement actif sont créés immédiatement, prêts à être remplacés par l’API réelle du prestataire." %}</p>
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+          {% for field in form %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            {{ field.errors }}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-success btn-lg rounded-pill px-5">{% trans "Valider et activer (démo)" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

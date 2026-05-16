@@ -1,0 +1,19 @@
+{% extends "layouts/app_shell.html" %}
+{% load i18n %}
+{% block title %}{% trans "Merci" %}{% endblock %}
+{% block page_heading %}{% trans "Souscription enregistrée" %}{% endblock %}
+{% block app_main %}
+<div class="card border-0 shadow-sm max-w-2xl">
+  <div class="card-body p-5">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <span class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center" style="width:56px;height:56px;"><i class="bi bi-check-lg fs-4"></i></span>
+      <div>
+        <h2 class="h5 mb-0">{% trans "Merci pour votre confiance" %}</h2>
+        <p class="text-muted small mb-0">{% trans "Votre abonnement démo est actif. Consultez l’historique dans l’administration ou via l’API." %}</p>
+      </div>
+    </div>
+    <a href="{% url 'dashboard:index' %}" class="btn btn-primary rounded-pill">{% trans "Retour au tableau de bord" %}</a>
+    <a href="{% url 'discovery:expert_list' %}" class="btn btn-outline-secondary rounded-pill ms-2">{% trans "Parcourir les experts" %}</a>
+  </div>
+</div>
+{% endblock %}

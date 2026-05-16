@@ -1,0 +1,34 @@
+{% extends "layouts/app_shell.html" %}
+{% load i18n %}
+{% block title %}{% trans "Ma disponibilité" %}{% endblock %}
+{% block page_heading %}{% trans "Statut de disponibilité" %}{% endblock %}
+{% block app_main %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <p class="text-muted">{% trans "Ce statut est visible publiquement sur la plateforme (liste découverte, fiches). Les entreprises peuvent ainsi évaluer votre disponibilité réelle." %}</p>
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+          {% if form.availability.errors %}
+          <div class="alert alert-danger">{{ form.availability.errors }}</div>
+          {% endif %}
+          <fieldset>
+            <legend class="h6 mb-3">{% trans "Choisir un statut" %}</legend>
+            {% for radio in form.availability %}
+            <div class="form-check mb-2 p-3 border rounded-3">
+              {{ radio.tag }}
+              <label class="form-check-label ms-2" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+            </div>
+            {% endfor %}
+          </fieldset>
+          <button type="submit" class="btn btn-success rounded-pill mt-4 px-4">{% trans "Enregistrer" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

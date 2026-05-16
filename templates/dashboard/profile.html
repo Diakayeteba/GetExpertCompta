@@ -1,0 +1,75 @@
+{% extends "layouts/app_shell.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mon profil" %}{% endblock %}
+{% block page_heading %}{% trans "Mon profil" %}{% endblock %}
+{% block app_main %}
+<div class="row g-4">
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm text-center p-4">
+      <img src="{{ user_avatar_url }}" alt="" class="rounded-circle mx-auto mb-3 border" width="120" height="120" style="object-fit:cover;">
+      <h1 class="h5 mb-1">{{ user.get_full_name|default:user.email }}</h1>
+      <p class="text-muted small mb-2">{{ user.email }}</p>
+      <span class="badge bg-secondary-subtle text-secondary text-uppercase">{{ user.get_role_display }}</span>
+      <p class="small text-muted mt-3 mb-0">
+        {% trans "Statut compte" %} :
+        {% if user.is_active %}<span class="text-success">{% trans "Actif" %}</span>{% else %}<span class="text-warning">{% trans "Inactif" %}</span>{% endif %}
+        · {% if user.is_staff %}{% trans "Équipe" %}{% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase mb-3">{% trans "Informations personnelles" %}</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-4">{% trans "Pays" %}</dt>
+          <dd class="col-sm-8">
+            {% if expert_profile %}{{ expert_profile.country }}{% elif business_profile %}{{ business_profile.country }}{% else %}—{% endif %}
+          </dd>
+          <dt class="col-sm-4">{% trans "Ville" %}</dt>
+          <dd class="col-sm-8">
+            {% if expert_profile %}{{ expert_profile.city|default:"—" }}{% elif business_profile %}{{ business_profile.city|default:"—" }}{% else %}—{% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+    {% if expert_profile %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase mb-3">{% trans "Profil professionnel (expert)" %}</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-4">{% trans "Titre" %}</dt>
+          <dd class="col-sm-8">{{ expert_profile.title }}</dd>
+          <dt class="col-sm-4">{% trans "Expérience" %}</dt>
+          <dd class="col-sm-8">{{ expert_profile.years_experience }} {% trans "ans" %}</dd>
+          <dt class="col-sm-4">{% trans "Disponibilité" %}</dt>
+          <dd class="col-sm-8"><span class="badge bg-light text-dark">{{ expert_profile.get_availability_display }}</span></dd>
+          <dt class="col-sm-4">{% trans "Vérification" %}</dt>
+          <dd class="col-sm-8">{{ expert_profile.get_verification_status_display }}</dd>
+          <dt class="col-sm-4">{% trans "Spécialités" %}</dt>
+          <dd class="col-sm-8">{% for s in expert_profile.specialties.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+          <dt class="col-sm-4">{% trans "Bio" %}</dt>
+          <dd class="col-sm-8">{{ expert_profile.bio|default:"—"|linebreaksbr }}</dd>
+        </dl>
+        <a href="{% url 'dashboard:expert_status' %}" class="btn btn-primary btn-sm mt-3 rounded-pill">{% trans "Modifier la disponibilité" %}</a>
+      </div>
+    </div>
+    {% endif %}
+    {% if business_profile %}
+    <div class="card border-0 shadow-sm {% if expert_profile %}mt-4{% endif %}">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase mb-3">{% trans "Entreprise" %}</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-4">{% trans "Raison sociale" %}</dt>
+          <dd class="col-sm-8">{{ business_profile.company_name }}</dd>
+          <dt class="col-sm-4">{% trans "Identifiant fiscal" %}</dt>
+          <dd class="col-sm-8">{{ business_profile.tax_id|default:"—" }}</dd>
+          <dt class="col-sm-4">{% trans "Téléphone" %}</dt>
+          <dd class="col-sm-8">{{ business_profile.phone|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

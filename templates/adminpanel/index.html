@@ -1,0 +1,15 @@
+{% extends "layouts/base.html" %}
+{% block title %}Console administration{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-900">Console administration</h1>
+<p class="mt-2 text-slate-600">Vue synthétique ; la gestion fine reste dans <a class="text-emerald-700 underline" href="/admin/">Django Admin</a>.</p>
+<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Utilisateurs</p><p class="text-3xl font-bold">{{ count_users }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Experts</p><p class="text-3xl font-bold">{{ count_experts }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Entreprises</p><p class="text-3xl font-bold">{{ count_businesses }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Experts en attente</p><p class="text-3xl font-bold text-amber-600">{{ count_pending_experts }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Abonnements actifs</p><p class="text-3xl font-bold">{{ count_subscriptions }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Transactions</p><p class="text-3xl font-bold">{{ count_payments }}</p></div>
+  <div class="rounded-xl border bg-white p-4 shadow-sm"><p class="text-sm text-slate-500">Avis à modérer</p><p class="text-3xl font-bold text-rose-600">{{ count_reviews_pending }}</p></div>
+</div>
+{% endblock %}

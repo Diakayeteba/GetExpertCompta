@@ -1,0 +1,15 @@
+{% extends "account/email/base_message.txt" %}
+{% load account i18n %}
+{% block content %}{% autoescape off %}{% user_display user as user_display %}
+{% if code %}
+{% blocktranslate %}Votre code de vérification (saisissez-le dans la fenêtre ouverte du navigateur) :{% endblocktranslate %}
+
+{{ code }}
+{% else %}
+{% blocktranslate with site_domain=current_site.domain %}Bonjour {{ user_display }},
+
+Pour activer votre compte sur {{ site_domain }}, veuillez confirmer cette adresse e-mail en ouvrant le lien ci-dessous :{% endblocktranslate %}
+
+{{ activate_url }}
+{% endif %}
+{% endautoescape %}{% endblock %}

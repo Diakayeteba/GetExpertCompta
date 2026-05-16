@@ -1,0 +1,171 @@
+{% extends "layouts/app_shell.html" %}
+{% load i18n %}
+{% block title %}{% trans "Tableau de bord" %}{% endblock %}
+{% block page_heading %}{% trans "Tableau de bord" %}{% endblock %}
+{% block header_actions %}
+<div class="d-flex align-items-center gap-2">
+  <a href="{% url 'discovery:expert_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-compass me-1"></i>{% trans "Découverte" %}</a>
+  {% if user.role == 'business' %}
+  <a href="{% url 'subscriptions:premium' %}" class="btn btn-success btn-sm rounded-pill"><i class="bi bi-gem me-1"></i>{% trans "Premium" %}</a>
+  {% endif %}
+</div>
+{% endblock %}
+{% block app_main %}
+<div class="row g-4">
+  {% if user.role == 'business' %}
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase">{% trans "Vue d’ensemble" %}</h2>
+        {% if stats %}
+        <dl class="row small mb-0 mt-3">
+          <dt class="col-7">{% trans "Demandes" %}</dt>
+          <dd class="col-5 text-end fw-semibold">{{ stats.requests_total }}</dd>
+          <dt class="col-7">{% trans "Avis donnés" %}</dt>
+          <dd class="col-5 text-end fw-semibold">{{ stats.reviews_given }}</dd>
+        </dl>
+        {% else %}
+        <p class="text-muted small mb-0">{% trans "Complétez votre profil entreprise pour suivre vos demandes." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 mb-0 text-secondary text-uppercase">{% trans "Demandes récentes" %}</h2>
+          <a class="small" href="{% url 'swagger-ui' %}">API</a>
+        </div>
+        {% if recent_requests %}
+        <ul class="list-group list-group-flush">
+          {% for r in recent_requests %}
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <span class="text-truncate me-2">#{{ r.pk }} — {{ r.get_status_display }}</span>
+            <span class="badge bg-light text-secondary">{{ r.created_at|date:"SHORT_DATE_FORMAT" }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">{% trans "Aucune demande pour le moment." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% elif user.role == 'expert' %}
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 text-secondary text-uppercase">{% trans "Performance" %}</h2>
+        {% if stats %}
+        <dl class="row small mb-0 mt-3">
+          <dt class="col-7">{% trans "Demandes liées" %}</dt>
+          <dd class="col-5 text-end fw-semibold">{{ stats.incoming_requests }}</dd>
+          <dt class="col-7">{% trans "Note moy." %}</dt>
+          <dd class="col-5 text-end fw-semibold">{{ stats.rating }}</dd>
+          <dt class="col-7">{% trans "Avis" %}</dt>
+          <dd class="col-5 text-end fw-semibold">{{ stats.reviews }}</dd>
+        </dl>
+        {% else %}
+        <p class="text-muted small mb-0">{% trans "Votre profil expert sera bientôt visible ici." %}</p>
+        {% endif %}
+        <a href="{% url 'dashboard:expert_status' %}" class="btn btn-outline-primary btn-sm mt-3 w-100 rounded-pill">{% trans "Ma disponibilité" %}</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-secondary text-uppercase">{% trans "Dernières sollicitations" %}</h2>
+        {% if recent_request_links %}
+        <ul class="list-group list-group-flush">
+          {% for r in recent_request_links %}
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <span class="text-truncate me-2">#{{ r.pk }} — {{ r.business.company_name }}</span>
+            <span class="badge bg-light text-secondary">{{ r.get_status_display }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">{% trans "Aucune demande associée pour le moment." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <p class="text-muted">{% trans "Espace réservé aux rôles entreprise ou expert." %}</p>
+  </div>
+  {% endif %}
+
+  <div class="col-12 col-xl-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 mb-0 text-secondary text-uppercase">{% trans "Experts en vedette" %}</h2>
+          <a href="{% url 'discovery:expert_list' %}" class="small">{% trans "Tout voir" %}</a>
+        </div>
+        <div class="row g-2">
+          {% for e in experts_preview %}
+          <div class="col-12 col-md-6">
+            <div class="border rounded-3 p-3 h-100 bg-white">
+              <div class="d-flex align-items-center gap-2">
+                {% if e.avatar %}
+                <img src="{{ e.avatar.url }}" alt="" class="rounded-circle" width="40" height="40" style="object-fit:cover;">
+                {% else %}
+                <span class="rounded-circle bg-secondary-subtle d-inline-flex align-items-center justify-content-center" style="width:40px;height:40px;"><i class="bi bi-person text-secondary"></i></span>
+                {% endif %}
+                <div class="min-w-0">
+                  <div class="fw-semibold text-truncate">{{ e.user.get_full_name|default:e.user.email }}</div>
+                  <div class="small text-muted text-truncate">{{ e.title }}</div>
+                </div>
+              </div>
+              <div class="mt-2 small">
+                <span class="badge {% if e.availability == 'available' %}text-bg-success{% elif e.availability == 'occupied' %}text-bg-warning text-dark{% else %}text-bg-secondary{% endif %}">{{ e.get_availability_display }}</span>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-muted small">{% trans "Aucun expert vérifié à afficher." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3 text-secondary text-uppercase">{% trans "Notifications" %}</h2>
+        {% if notifications %}
+        <ul class="list-group list-group-flush">
+          {% for n in notifications %}
+          <li class="list-group-item px-0">
+            <div class="fw-medium">{{ n.title }}</div>
+            <div class="small text-muted">{{ n.body|truncatewords:18 }}</div>
+            <div class="small text-secondary">{{ n.created_at|date:"SHORT_DATETIME_FORMAT" }}</div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted small mb-0">{% trans "Aucune notification récente." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+        <span class="fw-semibold text-secondary me-2">{% trans "Accès rapide" %}</span>
+        <a class="btn btn-outline-secondary btn-sm rounded-pill" href="{% url 'discovery:expert_list' %}"><i class="bi bi-search me-1"></i>{% trans "Rechercher un expert" %}</a>
+        {% if user.role == 'business' %}
+        <a class="btn btn-outline-secondary btn-sm rounded-pill" href="{% url 'subscriptions:checkout' %}"><i class="bi bi-credit-card me-1"></i>{% trans "Souscrire" %}</a>
+        {% endif %}
+        <a class="btn btn-outline-secondary btn-sm rounded-pill" href="{% url 'dashboard:profile' %}"><i class="bi bi-person me-1"></i>{% trans "Mon profil" %}</a>
+        <a class="btn btn-outline-secondary btn-sm rounded-pill" href="{% url 'home' %}"><i class="bi bi-house me-1"></i>{% trans "Site public" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

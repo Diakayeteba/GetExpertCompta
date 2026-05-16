@@ -1,0 +1,6 @@
+{% extends "layouts/base.html" %}
+{% block title %}Disponibilité{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-900">Disponibilité</h1>
+<p class="mt-2 text-slate-600">Envoyez une requête <code class="rounded bg-slate-100 px-1">PATCH /api/v1/experts/me/</code> avec <code class="rounded bg-slate-100 px-1">{"availability":"available"}</code> ou <code class="rounded bg-slate-100 px-1">"unavailable"</code> (authentification JWT requise).</p>
+{% endblock %}

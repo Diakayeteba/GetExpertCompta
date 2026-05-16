@@ -1,0 +1,48 @@
+.app-body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f1f5f9;
+}
+
+.app-sidebar {
+  width: 280px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+}
+
+.app-nav-link {
+  color: #334155 !important;
+  font-weight: 500;
+}
+
+.app-nav-link:hover {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+
+.app-nav-link.active {
+  background: linear-gradient(90deg, #d1fae5, #ecfdf5) !important;
+  color: #065f46 !important;
+  border-left: 3px solid #059669;
+}
+
+.bg-emerald {
+  background: #059669;
+}
+
+.text-emerald-800 {
+  color: #065f46;
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}
+
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    width: 100%;
+    position: relative;
+    min-height: auto;
+  }
+}

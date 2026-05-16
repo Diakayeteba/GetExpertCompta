@@ -1,0 +1,91 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: # à revoir plus tard pour utiliser les variables d'environnement avec des valeurs par défaut
+      POSTGRES_USER: # à revoir plus tard pour utiliser les variables d'environnement avec des valeurs par défaut
+      POSTGRES_PASSWORD: # à revoir plus tard pour utiliser les variables d'environnement avec des valeurs par défaut
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-getexpertcompta} -d ${POSTGRES_DB:-getexpertcompta}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    entrypoint: ["/app/scripts/docker-entrypoint-web.sh"]
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "getexpertcompta.wsgi:application"]
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: getexpertcompta.settings.production
+      DATABASE_URL: #postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    build: .
+    command: celery -A getexpertcompta worker -l info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: getexpertcompta.settings.production
+      DATABASE_URL: #postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build: .
+    command: celery -A getexpertcompta beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: getexpertcompta.settings.production
+      #DATABASE_URL A REVOIR PLUS TARD POUR UTILISER LES VARIABLES D'ENVIRONNEMENT AVEC DES VALEURS PAR DEFAUT
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  media_volume:

@@ -1,0 +1,53 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n static %}
+
+{% block head_title %}{% trans "Connexion" %}{% endblock head_title %}
+
+{% block content %}
+<div class="card auth-card shadow">
+  <div class="card-header py-4 px-4">
+    <h1 class="h4 mb-1 fw-bold text-dark">{% trans "Connexion" %}</h1>
+    <p class="text-muted small mb-0">
+      {% trans "Pas encore de compte ?" %}
+      <a href="{{ signup_url }}" class="fw-semibold text-decoration-none" style="color: #047857;">{% trans "Inscrivez-vous" %}</a>
+    </p>
+  </div>
+  <div class="card-body p-4">
+    {% if not SOCIALACCOUNT_ONLY %}
+    <form method="post" action="{% url 'account_login' %}">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger small mb-3">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      {% for field in form.visible_fields %}
+        {% if field.field.widget.input_type == 'checkbox' %}
+          <div class="form-check mb-3">
+            {{ field }}
+            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+      {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+      {{ redirect_field|safe }}
+
+      <button type="submit" class="btn btn-auth-primary text-white w-100 mb-3">
+        <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Se connecter" %}
+      </button>
+      <p class="text-center small mb-0">
+        <a href="{% url 'account_reset_password' %}" class="text-muted">{% trans "Mot de passe oublié ?" %}</a>
+      </p>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}GetExpertCompta{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="Plateforme panafricaine entre entreprises et experts-comptables certifiés.">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <a href="{% url 'home' %}" class="text-lg font-semibold tracking-tight text-emerald-800">GetExpertCompta</a>
+      <nav class="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
+        <a href="{% url 'discovery:expert_list' %}" class="hover:text-emerald-700">Découverte</a>
+        <a href="{% url 'subscriptions:premium' %}" class="hover:text-emerald-700">Premium</a>
+        <a href="{% url 'how_it_works' %}" class="hover:text-emerald-700">Fonctionnement</a>
+        <a href="{% url 'pricing' %}" class="hover:text-emerald-700">Tarifs</a>
+        <a href="{% url 'faq' %}" class="hover:text-emerald-700">FAQ</a>
+        <a href="{% url 'contact' %}" class="hover:text-emerald-700">Contact</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:index' %}" class="rounded-md bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800">Tableau de bord</a>
+          <a href="{% url 'account_logout' %}" class="text-slate-500 hover:text-emerald-700">Déconnexion</a>
+        {% else %}
+          <a href="{% url 'account_login' %}" class="hover:text-emerald-700">Connexion</a>
+          <a href="{% url 'account_signup' %}" class="rounded-md bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800">Inscription</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-t border-slate-200 bg-white py-8 text-center text-sm text-slate-500">
+    © {% now "Y" %} GetExpertCompta — Confiance, conformité, croissance.
+  </footer>
+</body>
+</html>

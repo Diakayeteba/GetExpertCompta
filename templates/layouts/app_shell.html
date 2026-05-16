@@ -1,0 +1,100 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tableau de bord{% endblock %} — GetExpertCompta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{% static 'css/app-shell.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="app-body">
+  <div class="d-flex min-vh-100">
+    <aside class="app-sidebar border-end bg-white d-flex flex-column flex-shrink-0">
+      <div class="p-3 border-bottom">
+        <a href="{% url 'dashboard:index' %}" class="text-decoration-none fw-bold text-emerald-800 fs-5 d-flex align-items-center gap-2">
+          <span class="rounded-circle bg-emerald d-inline-block" style="width:10px;height:10px;"></span>
+          GetExpertCompta
+        </a>
+      </div>
+      <nav class="nav flex-column px-2 py-3 gap-1 flex-grow-1 small">
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3 {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}">
+          <i class="bi bi-grid-1x2 me-2"></i>{% trans "Tableau de bord" %}
+        </a>
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3" href="{% url 'discovery:expert_list' %}">
+          <i class="bi bi-compass me-2"></i>{% trans "Découverte" %}
+        </a>
+        {% if user.is_authenticated and user.role == 'business' %}
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3 {% if request.resolver_match.namespace == 'subscriptions' %}active{% endif %}" href="{% url 'subscriptions:premium' %}">
+          <i class="bi bi-gem me-2"></i>{% trans "Premium" %}
+        </a>
+        {% endif %}
+        {% if user.is_authenticated and user.role == 'expert' %}
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3 {% if request.resolver_match.url_name == 'expert_status' %}active{% endif %}" href="{% url 'dashboard:expert_status' %}">
+          <i class="bi bi-circle-half me-2"></i>{% trans "Ma disponibilité" %}
+        </a>
+        {% endif %}
+        <hr class="my-2">
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3" href="{% url 'home' %}">
+          <i class="bi bi-house me-2"></i>{% trans "Site public" %}
+        </a>
+        <a class="app-nav-link nav-link rounded-3 py-2 px-3" href="{% url 'pricing' %}">
+          <i class="bi bi-tag me-2"></i>{% trans "Tarifs" %}
+        </a>
+      </nav>
+      <div class="mt-auto border-top bg-light p-3">
+        {% if not user.is_authenticated %}
+        <a href="{% url 'account_login' %}" class="btn btn-outline-secondary w-100 rounded-3 mb-2"><i class="bi bi-box-arrow-in-right me-1"></i>{% trans "Connexion" %}</a>
+        <a href="{% url 'account_signup' %}" class="btn btn-success w-100 rounded-3">{% trans "Créer un compte" %}</a>
+        {% else %}
+        <p class="small text-muted mb-0 text-truncate px-1" title="{{ user.get_full_name|default:user.email }}">{{ user.get_full_name|default:user.email }}</p>
+        {% endif %}
+      </div>
+    </aside>
+    <div class="flex-grow-1 d-flex flex-column min-vh-100 bg-body-secondary">
+      <header class="border-bottom bg-white py-2 px-3 px-md-4">
+        <div class="d-flex flex-wrap align-items-center gap-2 gap-md-3">
+          <h1 class="h6 mb-0 text-secondary fw-semibold text-truncate order-1" style="max-width:12rem;">{% block page_heading %}{% endblock %}</h1>
+          <form class="flex-grow-1 order-3 order-md-2" style="min-width:200px;max-width:420px;" action="{% url 'discovery:expert_list' %}" method="get" role="search">
+            <div class="input-group input-group-sm">
+              <input type="search" name="q" value="{{ request.GET.q }}" class="form-control rounded-start-pill" placeholder="{% trans 'Recherche globale experts…' %}" aria-label="{% trans 'Recherche' %}">
+              <button type="submit" class="btn btn-outline-secondary rounded-end-pill" aria-label="{% trans 'Rechercher' %}"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
+          <div class="ms-md-auto order-2 order-md-3 d-flex align-items-center gap-2">
+            {% block header_actions %}{% endblock %}
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+              <button class="btn btn-light border rounded-pill d-flex align-items-center gap-2 py-1 ps-1 pe-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{{ user_avatar_url }}" alt="" width="32" height="32" class="rounded-circle object-fit-cover">
+                <i class="bi bi-chevron-down small text-secondary"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="{% url 'dashboard:profile' %}"><i class="bi bi-person me-2"></i>{% trans "Mon profil" %}</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-right me-2"></i>{% trans "Déconnexion" %}</a></li>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+      <main class="flex-grow-1 p-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+        {% block app_main %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

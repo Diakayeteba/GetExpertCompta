@@ -1,0 +1,103 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Découverte d’experts" %} — GetExpertCompta{% endblock %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-3xl font-bold text-slate-900">{% trans "Experts-comptables vérifiés" %}</h1>
+    <p class="mt-2 max-w-2xl text-slate-600">{% trans "Parcourez le catalogue public. L’aperçu complet des fiches est étendu avec l’offre Premium." %}</p>
+  </div>
+  {% if user.is_authenticated and user.role == 'business' %}
+  <a href="{% url 'subscriptions:premium' %}" class="inline-flex shrink-0 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">{% trans "Passer à Premium" %}</a>
+  {% elif not user.is_authenticated %}
+  <a href="{% url 'account_signup' %}?next={% url 'subscriptions:premium' %}" class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:border-emerald-600">{% trans "Créer un compte entreprise" %}</a>
+  {% endif %}
+</div>
+
+<form method="get" class="mb-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-12 md:items-end">
+  <div class="md:col-span-4">
+    <label class="block text-xs font-semibold uppercase text-slate-500">{% trans "Recherche" %}</label>
+    <input type="search" name="q" value="{{ request.GET.q }}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="{% trans 'Nom, ville, spécialité…' %}">
+  </div>
+  <div class="md:col-span-2">
+    <label class="block text-xs font-semibold uppercase text-slate-500">{% trans "Pays (code)" %}</label>
+    <input type="text" name="country" maxlength="2" value="{{ request.GET.country }}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm uppercase" placeholder="SN">
+  </div>
+  <div class="md:col-span-3">
+    <label class="block text-xs font-semibold uppercase text-slate-500">{% trans "Ville" %}</label>
+    <input type="text" name="city" value="{{ request.GET.city }}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+  </div>
+  <div class="md:col-span-2">
+    <label class="block text-xs font-semibold uppercase text-slate-500">{% trans "Disponibilité" %}</label>
+    <select name="availability" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+      <option value="">{% trans "Toutes" %}</option>
+      <option value="available" {% if request.GET.availability == 'available' %}selected{% endif %}>{% trans "Disponible" %}</option>
+      <option value="occupied" {% if request.GET.availability == 'occupied' %}selected{% endif %}>{% trans "Occupé" %}</option>
+      <option value="unavailable" {% if request.GET.availability == 'unavailable' %}selected{% endif %}>{% trans "Indisponible" %}</option>
+    </select>
+  </div>
+  <div class="md:col-span-1 flex gap-2">
+    <button type="submit" class="w-full rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">OK</button>
+  </div>
+</form>
+
+{% if show_premium_upsell %}
+<div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+  <h2 class="text-lg font-semibold">{% trans "Élargissez votre recherche avec Premium" %}</h2>
+  <p class="mt-2 text-sm text-amber-900/90">{% trans "Certains profils correspondant à votre recherche ne sont pas inclus dans la version gratuite. Passez à Premium pour un accès illimité au catalogue et aux coordonnées complètes." %}</p>
+  <a href="{% url 'subscriptions:premium' %}" class="mt-4 inline-flex rounded-lg bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900">{% trans "Voir plus d’experts professionnels" %}</a>
+</div>
+{% endif %}
+
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {% for e in experts %}
+  {# Contenu complet : Premium OU expert dans le pool gratuit #}
+  {% if user_has_premium or e.pk in free_expert_ids %}
+  <article class="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900">{{ e.user.get_full_name|default:e.user.email }}</h2>
+        <p class="mt-1 text-sm text-slate-600">{{ e.title }}</p>
+      </div>
+      <span class="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">{% trans "Vérifié" %}</span>
+    </div>
+    <p class="mt-2 text-xs text-slate-500">{{ e.city|default:e.country }} · ★ {{ e.average_rating }} ({{ e.review_count }})</p>
+    <p class="mt-3">
+      <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {% if e.availability == 'available' %}bg-emerald-100 text-emerald-900{% elif e.availability == 'occupied' %}bg-amber-100 text-amber-900{% else %}bg-slate-100 text-slate-700{% endif %}">{{ e.get_availability_display }}</span>
+    </p>
+    <a href="{% url 'discovery:expert_detail' e.pk %}" class="mt-auto inline-flex justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">{% trans "Voir le profil" %}</a>
+  </article>
+  {% else %}
+  <article class="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm opacity-95">
+    <div class="flex items-start justify-between gap-2">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900"><span class="blur-sm select-none">{{ e.user.get_full_name|default:e.user.email }}</span></h2>
+        <p class="mt-1 text-sm text-slate-600"><span class="blur-sm select-none">{{ e.title }}</span></p>
+      </div>
+      <span class="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">{% trans "Vérifié" %}</span>
+    </div>
+    <p class="mt-2 text-xs text-slate-500">{{ e.city|default:e.country }} · ★ {{ e.average_rating }} ({{ e.review_count }})</p>
+    <p class="mt-3">
+      <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {% if e.availability == 'available' %}bg-emerald-100 text-emerald-900{% elif e.availability == 'occupied' %}bg-amber-100 text-amber-900{% else %}bg-slate-100 text-slate-700{% endif %}">{{ e.get_availability_display }}</span>
+    </p>
+    <p class="mt-3 text-sm text-slate-500">{% trans "Aperçu limité — contenu complet réservé aux abonnés Premium." %}</p>
+    <a href="{% url 'subscriptions:premium' %}" class="mt-auto inline-flex justify-center rounded-lg border border-emerald-700 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">{% trans "Débloquer avec Premium" %}</a>
+  </article>
+  {% endif %}
+  {% empty %}
+  <p class="text-slate-600">{% trans "Aucun expert ne correspond à vos critères." %}</p>
+  {% endfor %}
+</div>
+
+{% if is_paginated %}
+<nav class="mt-10 flex justify-center gap-2 text-sm">
+  {% if page_obj.has_previous %}
+  <a class="rounded-lg border border-slate-300 px-3 py-1 hover:border-emerald-600" href="{% querystring page=page_obj.previous_page_number %}">{% trans "Précédent" %}</a>
+  {% endif %}
+  <span class="px-3 py-1 text-slate-500">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="rounded-lg border border-slate-300 px-3 py-1 hover:border-emerald-600" href="{% querystring page=page_obj.next_page_number %}">{% trans "Suivant" %}</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

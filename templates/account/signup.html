@@ -1,0 +1,68 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n static %}
+
+{% block head_title %}{% trans "Création de compte" %}{% endblock head_title %}
+
+{% block content %}
+<div class="card auth-card shadow">
+  <div class="card-header py-4 px-4">
+    <h1 class="h4 mb-1 fw-bold text-dark">{% trans "Créer un compte" %}</h1>
+    <p class="text-muted small mb-0">
+      {% trans "Vous avez déjà un compte ?" %}
+      <a href="{{ login_url }}" class="fw-semibold text-decoration-none" style="color: #047857;">{% trans "Connectez-vous" %}</a>
+    </p>
+  </div>
+  <div class="card-body p-4">
+    {% if not SOCIALACCOUNT_ONLY %}
+    <form id="signup-form" method="post" action="{% url 'account_signup' %}" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger small mb-3">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">{% trans "Courriel" %}</label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.role.id_for_label }}" class="form-label fw-semibold">{% trans "Type de compte" %}</label>
+        {{ form.role }}
+        {% if form.role.errors %}<div class="invalid-feedback d-block">{{ form.role.errors }}</div>{% endif %}
+      </div>
+
+      <div class="mb-2">
+        <label for="{{ form.password1.id_for_label }}" class="form-label fw-semibold">{% trans "Mot de passe" %}</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors }}</div>{% endif %}
+        <div class="pwd-thermo-wrap" aria-live="polite">
+          <div class="pwd-thermo-track">
+            <div id="pwd-thermo-fill" class="pwd-thermo-fill state-none" style="width:0%"></div>
+          </div>
+          <span id="pwd-thermo-label" class="pwd-thermo-label text-muted-custom">{% trans "Saisissez un mot de passe" %}</span>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="{{ form.password2.id_for_label }}" class="form-label fw-semibold">{% trans "Confirmation du mot de passe" %}</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors }}</div>{% endif %}
+      </div>
+
+      {{ redirect_field|safe }}
+
+      <button type="submit" class="btn btn-auth-primary text-white w-100">
+        <i class="bi bi-person-check me-2"></i>{% trans "Créer mon compte" %}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_body %}
+  {{ block.super }}
+  <script src="{% static 'js/password-thermo.js' %}"></script>
+{% endblock extra_body %}

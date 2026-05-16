@@ -1,0 +1,147 @@
+ALLSHOPV3
+
+contenu de fichier index:
+
+{% extends "allshopstore/base.html" %}
+{% block content %}
+
+    <div class= "row">
+        <div class= "col-md-12">
+            <form class= "card card-sm">
+                <div class ="card-body row no-gutters align-items-center">
+                    <div class="col">
+                        <input type="search" placeholder="Entrez le nom du produit que vous cherchez" name="item-name" class ="form-control form-control-borderless ">
+                    </div>
+                    <div class = "col-auto">
+                        <button type="submit" class="btn btn-success">Recherche</button>
+                    </div>
+                </div>
+            </form> 
+        </div>
+    </div>
+    <div class="row">
+        {% for  produit in produit_object  %}
+    
+        <div class= "col-md-3">
+            <div class = "card">
+                <img src="{{produit.image}}" alt="{{produit.titre}}" class ="card-img-top">
+                <div class="card-body">
+                    <div id = "aa{{produit.id}}" class="card-title"> {{produit.titre}}</div>
+                    <div id= "prix{{produit.id}}" style="color: orange" class="card-text"><h3>$</h3>  {{produit.prix}} </div>
+                    <a href ="{{produit.id}}" class= "btn btn-warning">Voir</a>
+                    <button id ="{{produit.id}}" class="btn ted btn-success">Ajouter</button>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div> 
+
+    <div class = "row mt-3">
+        <div class ="col-md-3 offset-md-4">
+            <ul class = "pagination">
+                 {% if produit_object.has_previous %}
+                        <li class="page-item">
+                            <a class = "page-link" href= "?page={{produit_object.previous_page_number}}">Precedent</a>
+                        </li>
+
+                {% endif %}
+
+                    <li class= "page-item active">
+                        <a class = "page-link"  href="?page={{produit_object.number}}">{{produit_object.number}}</a>
+                    </li>
+
+                  {% if produit_object.has_next %}
+                        <li class="page-item">
+                            <a href= "?page={{produit_object.next_page_number}}">Suivant</a>
+                        </li>
+
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+{% endblock %}
+  
+{% block js %}
+    <script type="text/javascript">
+        // Initialisation du panier
+        var panier;
+        if (localStorage.getItem('panier') == null) {
+            panier = {};
+        } else {
+            panier = JSON.parse(localStorage.getItem('panier'));
+        }
+
+        // Fonction pour mettre à jour le texte du bouton et le Popover
+        function majPanier(panier) {
+           var panierString = "<h5>Voici votre liste</h5>";
+    var index = 1;
+    var totalQuantite = 0; // On initialise le compteur
+
+    for (var x in panier) {
+        var elementNom = document.getElementById("aa" + x);
+        var nomProduit;
+
+        // On vérifie si le produit est présent sur la page actuelle
+        if (elementNom) {
+            nomProduit = elementNom.innerHTML;
+        } else {
+            // Si le produit n'est pas sur cette page, on affiche un texte par défaut ou l'ID
+            nomProduit = "Produit " + x; 
+        }
+
+        var qte = panier[x][0];
+        panierString += index + ". " + nomProduit + " Qte: " + panier[x] + "<br>";
+        // On additionne la quantité au total pour le bouton
+        totalQuantite += qte;
+        index += 1;
+    }
+     panierString += "<a href='/checkout' class= 'btn btn-primary' id='checkout'>Checkout</a>";
+     
+    // Mise à jour du bouton
+    var boutonPanier = document.getElementById("panier");
+    if (boutonPanier) {
+        // On affiche la variable totalQuantite (un chiffre seul)
+        boutonPanier.innerHTML = "Panier(" + totalQuantite + ")";
+        boutonPanier.setAttribute('data-content', panierString);
+        // On réinitialise le popover pour mettre à jour le contenu
+        $('[data-toggle="popover"]').popover();
+    }
+
+        }
+
+        // Appeler au chargement de la page
+        majPanier(panier);
+
+        // Gestion du clic sur "Ajouter"
+        $(document).on('click', '.ted', function(){
+            var item_id = $(this).attr('id').toString();
+
+            // On récupère le prix affiché sur la page
+            var prix_unitaire = parseFloat(document.getElementById("prix"+item_id).innerHTML);
+            
+            if (panier[item_id] != undefined){
+                quantite  = panier[item_id][0] + 1
+                panier[item_id][0] = quantite;
+                // On ajoute le prix unitaire au total existant pour cet item
+                panier[item_id][2] += prix_unitaire;
+                
+                //panier[item_id][2] += parseFloat(document.getElementById("prix"+item_id).innerHTML);
+            } else {
+               quantite = 1;
+               //prix= parseFloat(document.getElementById("prix"+item_id).innerHTML);
+               nom=  document.getElementById("aa"+item_id).innerHTML;
+               panier[item_id] = [quantite, nom, prix_unitaire];
+               
+            }
+             
+            localStorage.setItem('panier', JSON.stringify(panier));
+            
+            // On met à jour l'affichage immédiatement
+            majPanier(panier);
+        });
+    </script>
+{% endblock %} 
+
+
