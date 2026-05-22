@@ -10,18 +10,18 @@ from notifications.models import Notification
 from requests_system.models import ServiceRequest
 from reviews.models import Review
 
-
+# Dashboard views for both Business and Expert users, with role-based access control and context data for the dashboard home page.
 class RoleDashboardMixin(LoginRequiredMixin):
     login_url = reverse_lazy("account_login")
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs): 
         if not request.user.is_authenticated:
             return super().dispatch(request, *args, **kwargs)
         if getattr(request.user, "role", None) == User.Role.ADMIN:
             return redirect("adminpanel:index")
         return super().dispatch(request, *args, **kwargs)
 
-
+# Main dashboard home view that displays relevant information based on the user's role (Business or Expert).
 class DashboardHomeView(RoleDashboardMixin, TemplateView):
     template_name = "dashboard/home.html"
 
@@ -62,7 +62,7 @@ class DashboardHomeView(RoleDashboardMixin, TemplateView):
                 )
         return ctx
 
-
+# View for displaying user profile information, including business and expert profiles if they exist.
 class ProfileView(RoleDashboardMixin, TemplateView):
     template_name = "dashboard/profile.html"
 
@@ -73,7 +73,7 @@ class ProfileView(RoleDashboardMixin, TemplateView):
         ctx["expert_profile"] = ExpertProfile.objects.filter(user=u).first()
         return ctx
 
-
+# Mixin to restrict access to views only for users with the Expert role and an associated ExpertProfile.
 class ExpertOnlyMixin(UserPassesTestMixin):
     login_url = reverse_lazy("account_login")
 
@@ -84,7 +84,7 @@ class ExpertOnlyMixin(UserPassesTestMixin):
             return False
         return ExpertProfile.objects.filter(user=self.request.user).exists()
 
-
+# View for managing expert availability status
 class ExpertStatusView(RoleDashboardMixin, ExpertOnlyMixin, FormView):
     template_name = "dashboard/expert_status.html"
     success_url = reverse_lazy("dashboard:expert_status")
@@ -106,7 +106,7 @@ class ExpertStatusView(RoleDashboardMixin, ExpertOnlyMixin, FormView):
         messages.success(self.request, "Votre statut de disponibilité a été mis à jour.")
         return super().form_valid(form)
 
-
+# Redirect view for legacy expert availability URL to the new expert status page
 class LegacyExpertAvailabilityRedirect(View):
     def get(self, request, *args, **kwargs):
         return redirect("dashboard:expert_status")

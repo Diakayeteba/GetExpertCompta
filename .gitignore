@@ -43,3 +43,9 @@ htmlcov/
 # Secrets
 *.pem
 secrets/
+
+.env
+.env.example
+*.sqlite3
+__pycache__/
+media/
